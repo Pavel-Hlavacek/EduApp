@@ -151,7 +151,7 @@ namespace EduApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(QuizDto quizDto, [FromForm] int[] correctAnswers)
+        public IActionResult Create(QuizDto quizDto)
         {
             if (!ModelState.IsValid)
                 return View(quizDto);
@@ -162,16 +162,6 @@ namespace EduApp.Controllers
             {
                 var question = quiz.Questions[i];
                 question.Quiz = quiz;
-
-                if (correctAnswers.Length <= i)
-                    continue; // skip if missing
-
-                int correctIndex = correctAnswers[i];
-
-                if (correctIndex >= 0 && correctIndex < quiz.Questions[i].Answers.Count)
-                {
-                    quiz.Questions[i].Answers[correctIndex].IsCorrect = true;
-                }
             }
 
             _quizRepository.AddQuiz(quiz);

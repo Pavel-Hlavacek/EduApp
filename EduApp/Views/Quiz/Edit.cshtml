@@ -40,7 +40,9 @@ function createQuestionCard(index, question = null) {
         return `
             <div class="answer-item mb-1 d-flex align-items-center">
                 <button type="button" class="btn btn-sm btn-danger me-2 remove-answer">×</button>
-                <input type="radio" name="Questions[${index}].CorrectAnswer" value="${answerIndex}" class="form-check-input me-2" ${isCorrect ? 'checked' : ''}/>
+                <input type="hidden" name="Questions[${index}].Answers[${answerIndex}].IsCorrect" value="false" />
+                <input type="checkbox" name="Questions[${index}].Answers[${answerIndex}].IsCorrect" value="true" ${isCorrect ? 'checked' : ''} />
+
                 <input name="Questions[${index}].Answers[${answerIndex}].Text" class="form-control" placeholder="Answer ${answerIndex + 1}" value="${answerText}" />
             </div>
         `;
@@ -50,7 +52,7 @@ function createQuestionCard(index, question = null) {
     let answersHtml = '';
     if(question && question.answers) {
         question.answers.forEach((a, i) => {
-            answersHtml += createAnswerItem(i, a.text, i === question.correctAnswer);
+            answersHtml += createAnswerItem(i, a.text, a.isCorrect);
         });
     } else {
         answersHtml = [0,1].map(j => createAnswerItem(j)).join('');
@@ -83,8 +85,7 @@ const addBtn = document.getElementById('addQuestionBtn');
 // Load existing questions from model
 const existingQuestions = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Questions.Select(q => new {
     text = q.Text,
-    // correctAnswer = q.CorrectAnswerIndex,
-    answers = q.Answers.Select(a => new { text = a.Text })
+    answers = q.Answers.Select(a => new { text = a.Text, isCorrect = a.IsCorrect })
 })));
 
 existingQuestions.forEach(q => {
@@ -129,7 +130,8 @@ container.addEventListener('click', e => {
         div.classList.add('answer-item', 'mb-1', 'd-flex', 'align-items-center');
         div.innerHTML = `
             <button type="button" class="btn btn-sm btn-danger me-2 remove-answer">×</button>
-            <input type="radio" name="Questions[${index}].CorrectAnswer" value="${answerCount}" class="form-check-input me-2"/>
+           <input type="hidden" name="Questions[${index}].Answers[${answerIndex}].IsCorrect" value="false" />
+<input type="checkbox" name="Questions[${index}].Answers[${answerIndex}].IsCorrect" value="true" ${isCorrect ? 'checked' : ''} />
             <input name="Questions[${index}].Answers[${answerCount}].Text" class="form-control" placeholder="Answer ${answerCount + 1}" />
         `;
         answersBlock.appendChild(div);
@@ -139,11 +141,11 @@ container.addEventListener('click', e => {
     if(e.target.classList.contains('remove-answer')) {
         e.target.closest('.answer-item').remove();
         const answers = card.querySelectorAll('.answer-item');
-        answers.forEach((a,j) => {
-            const textInput = a.querySelector('input[type="text"]');
-            const radioInput = a.querySelector('input[type="radio"]');
-            textInput.name = `Questions[${index}].Answers[${j}].Text`;
-            radioInput.value = j;
+         answers.forEach((a,j) => {
+                const textInput = a.querySelector('input[type="text"]');
+                const checkboxInput = a.querySelector('input[type="checkbox"]');
+                textInput.name = `Questions[${index}].Answers[${j}].Text`;
+                checkboxInput.name = `Questions[${index}].Answers[${j}].IsCorrect`;
         });
     }
 
