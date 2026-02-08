@@ -146,17 +146,6 @@ namespace EduApp.Controllers
         public IActionResult Create()
         {
             var quiz = new QuizDto();
-
-            //for (int i = 0; i < 3; i++) // 3 questions
-            //{
-            //    var question = new QuestionDto();
-            //    for (int j = 0; j < 2; j++) // 4 answers per question
-            //    {
-            //        question.Answers.Add(new AnswerDto());
-            //    }
-            //    quiz.Questions.Add(question);
-            //}
-
             return View(quiz);
         }
 
@@ -165,17 +154,15 @@ namespace EduApp.Controllers
         public IActionResult Create(QuizDto quizDto, [FromForm] int[] correctAnswers)
         {
             if (!ModelState.IsValid)
-                return View(quizDto); // redisplay form with validation messages
+                return View(quizDto);
 
             var quiz = _mapper.Map<Quiz>(quizDto);
 
-            // 1️⃣ Set Quiz reference for each question
             for (int i = 0; i < quiz.Questions.Count; i++)
             {
                 var question = quiz.Questions[i];
-                question.Quiz = quiz; // EF Core will set Question.QuizId automatically
+                question.Quiz = quiz;
 
-                // 2️⃣ Set correct answer
                 if (correctAnswers.Length <= i)
                     continue; // skip if missing
 
@@ -188,27 +175,31 @@ namespace EduApp.Controllers
             }
 
             _quizRepository.AddQuiz(quiz);
-            return RedirectToAction(nameof(Index)); // View(quiz);
+            return RedirectToAction(nameof(Index));
         }
 
         public IActionResult Edit(int id)
         {
-            var quiz = _quizRepository.GetQuizById(id);
+            var quiz = _quizRepository.GetQuizWithQuestionsAndAnswers(id);
             if (quiz == null) return NotFound();
 
-            return View(quiz);
+            var quizDto = _mapper.Map<QuizDto>(quiz);
+
+            return View(quizDto);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(Quiz quiz)
+        public IActionResult Edit(QuizDto quizDto)
         {
+            var quiz = _mapper.Map<Quiz>(quizDto);
+
             if (ModelState.IsValid)
             {
                 _quizRepository.UpdateQuiz(quiz);
                 return RedirectToAction(nameof(Index));
             }
-            return View(quiz);
+            return View(quizDto);
         }
 
         public IActionResult Delete(int id)

@@ -1,0 +1,4 @@
+1. Add validation on client and server
+2. Replace synch method with async
+3. Complex refactor code - clean controller, add check in IQuizRepository and so on
+4. Fix GUI

@@ -1,26 +1,173 @@
-﻿@using QuizApp.Domain
-@model Quiz
+﻿@using EduApp.ViewModels
+@using QuizApp.Domain
+@model QuizDto
 
-<h2>Edit quiz</h2>
+<h2>Edit Quiz</h2>
 
-<form asp-action="Edit" method="post">
+<form asp-action="Edit" method="post" id="quizForm">
     @Html.AntiForgeryToken()
 
-    <!-- IMPORTANT: Id must be sent back -->
-    <input type="hidden" asp-for="Id" />
-
-    <div class="form-group">
+    <div class="form-group mb-3">
         <label asp-for="Title"></label>
         <input asp-for="Title" class="form-control" />
         <span asp-validation-for="Title" class="text-danger"></span>
     </div>
 
-    <div class="form-group">
+    <div class="form-group mb-3">
         <label asp-for="Description"></label>
         <textarea asp-for="Description" class="form-control"></textarea>
         <span asp-validation-for="Description" class="text-danger"></span>
     </div>
 
-    <button type="submit" class="btn btn-primary">Save changes</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    <h3>Questions</h3>
+    <div id="questionsContainer"></div>
+
+    <button type="button" class="btn btn-secondary mb-3" id="addQuestionBtn">Add Question</button>
+    <br />
+    <button type="submit" class="btn btn-success">Save Quiz</button>
 </form>
+
+@section Scripts {
+<script>
+let questionIndex = 0;
+
+function createQuestionCard(index, question = null) {
+    const card = document.createElement('div');
+    card.classList.add('question-card', 'border', 'p-3', 'mb-3');
+    card.dataset.index = index;
+
+    function createAnswerItem(answerIndex, answerText = '', isCorrect = false) {
+        return `
+            <div class="answer-item mb-1 d-flex align-items-center">
+                <button type="button" class="btn btn-sm btn-danger me-2 remove-answer">×</button>
+                <input type="radio" name="Questions[${index}].CorrectAnswer" value="${answerIndex}" class="form-check-input me-2" ${isCorrect ? 'checked' : ''}/>
+                <input name="Questions[${index}].Answers[${answerIndex}].Text" class="form-control" placeholder="Answer ${answerIndex + 1}" value="${answerText}" />
+            </div>
+        `;
+    }
+
+    // Build answers
+    let answersHtml = '';
+    if(question && question.answers) {
+        question.answers.forEach((a, i) => {
+            answersHtml += createAnswerItem(i, a.text, i === question.correctAnswer);
+        });
+    } else {
+        answersHtml = [0,1].map(j => createAnswerItem(j)).join('');
+    }
+
+    const questionText = question ? question.text : '';
+
+    card.innerHTML = `
+        <h5>Question ${index+1}</h5>
+        <input name="Questions[${index}].Text" class="form-control mb-2" placeholder="Enter question text" value="${questionText}" />
+
+        <div class="answers-block">
+            ${answersHtml}
+        </div>
+
+        <div class="mt-2">
+            <button type="button" class="btn btn-sm btn-primary prev-question">Previous</button>
+            <button type="button" class="btn btn-sm btn-primary next-question">Next</button>
+            <button type="button" class="btn btn-sm btn-secondary add-answer">Add Answer</button>
+            <button type="button" class="btn btn-sm btn-danger delete-question">Delete Question</button>
+        </div>
+    `;
+
+    return card;
+}
+
+const container = document.getElementById('questionsContainer');
+const addBtn = document.getElementById('addQuestionBtn');
+
+// Load existing questions from model
+const existingQuestions = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Questions.Select(q => new {
+    text = q.Text,
+    // correctAnswer = q.CorrectAnswerIndex,
+    answers = q.Answers.Select(a => new { text = a.Text })
+})));
+
+existingQuestions.forEach(q => {
+    container.appendChild(createQuestionCard(questionIndex, q));
+    questionIndex++;
+});
+
+// Add new question
+addBtn.addEventListener('click', () => {
+    container.appendChild(createQuestionCard(questionIndex));
+    showQuestion(questionIndex);
+    questionIndex++;
+});
+
+// Show only one question at a time
+function showQuestion(index) {
+    const cards = document.querySelectorAll('.question-card');
+    cards.forEach((c,i) => c.style.display = i === index ? 'block' : 'none');
+
+    cards.forEach((c,i) => {
+        const nextBtn = c.querySelector('.next-question');
+        const prevBtn = c.querySelector('.prev-question');
+        if(nextBtn) nextBtn.disabled = i === cards.length - 1;
+        if(prevBtn) prevBtn.disabled = i === 0;
+    });
+}
+
+// Handle clicks inside container
+container.addEventListener('click', e => {
+    const card = e.target.closest('.question-card');
+    if(!card) return;
+    let index = parseInt(card.dataset.index);
+
+    if(e.target.classList.contains('next-question')) showQuestion(index + 1);
+    if(e.target.classList.contains('prev-question')) showQuestion(index - 1);
+
+    // Add answer
+    if (e.target.classList.contains('add-answer')) {
+        const answersBlock = card.querySelector('.answers-block');
+        const answerCount = answersBlock.querySelectorAll('.answer-item').length;
+        const div = document.createElement('div');
+        div.classList.add('answer-item', 'mb-1', 'd-flex', 'align-items-center');
+        div.innerHTML = `
+            <button type="button" class="btn btn-sm btn-danger me-2 remove-answer">×</button>
+            <input type="radio" name="Questions[${index}].CorrectAnswer" value="${answerCount}" class="form-check-input me-2"/>
+            <input name="Questions[${index}].Answers[${answerCount}].Text" class="form-control" placeholder="Answer ${answerCount + 1}" />
+        `;
+        answersBlock.appendChild(div);
+    }
+
+    // Remove answer
+    if(e.target.classList.contains('remove-answer')) {
+        e.target.closest('.answer-item').remove();
+        const answers = card.querySelectorAll('.answer-item');
+        answers.forEach((a,j) => {
+            const textInput = a.querySelector('input[type="text"]');
+            const radioInput = a.querySelector('input[type="radio"]');
+            textInput.name = `Questions[${index}].Answers[${j}].Text`;
+            radioInput.value = j;
+        });
+    }
+
+    // Delete question
+    if(e.target.classList.contains('delete-question')) {
+        card.remove();
+        const cards = document.querySelectorAll('.question-card');
+        cards.forEach((c,i) => {
+            c.dataset.index = i;
+            c.querySelector('h5').textContent = `Question ${i+1}`;
+            c.querySelector('input[name^="Questions"]').name = `Questions[${i}].Text`;
+            c.querySelectorAll('.answer-item input[type="text"]').forEach((a,j) => {
+                a.name = `Questions[${i}].Answers[${j}].Text`;
+            });
+            c.querySelectorAll('.answer-item input[type="radio"]').forEach((r,j) => {
+                r.name = `Questions[${i}].CorrectAnswer`;
+                r.value = j;
+            });
+        });
+        questionIndex = cards.length;
+        showQuestion(Math.min(index, cards.length-1));
+    }
+});
+
+showQuestion(0);
+</script>
+}

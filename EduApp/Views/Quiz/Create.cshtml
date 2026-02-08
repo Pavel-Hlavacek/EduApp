@@ -23,123 +23,127 @@
 </form>
 
 @section Scripts {
-    <script>
-        let questionIndex = 0;
+<script>
+let questionIndex = 0;
 
-        // Create a question card with 2 default answers
-        function createQuestionCard(index) {
-            const card = document.createElement('div');
-            card.classList.add('question-card', 'border', 'p-3', 'mb-3');
-            card.dataset.index = index;
+// Create a question card with 2 default answers
+function createQuestionCard(index) {
+    const card = document.createElement('div');
+    card.classList.add('question-card', 'border', 'p-3', 'mb-3');
+    card.dataset.index = index;
 
-            card.innerHTML = `
-                <h5>Question ${index+1}</h5>
-                <input name="Questions[${index}].Text" class="form-control mb-2" placeholder="Enter question text" />
+    function createAnswerItem(answerIndex) {
+        return `
+            <div class="answer-item mb-1 d-flex align-items-center">
+                <button type="button" class="btn btn-sm btn-danger me-2 remove-answer">×</button>
+                <input type="radio" name="Questions[${index}].CorrectAnswer" value="${answerIndex}" class="form-check-input me-2" />
+                <input name="Questions[${index}].Answers[${answerIndex}].Text" class="form-control" placeholder="Answer ${answerIndex + 1}" />
+            </div>
+        `;
+    }
+
+    card.innerHTML = `
+        <h5>Question ${index+1}</h5>
+        <input name="Questions[${index}].Text" class="form-control mb-2" placeholder="Enter question text" />
 
         <div class="answers-block">
-            ${[0,1].map(j => `
-                <div class="answer-item mb-1 d-flex align-items-center">
-                    <button type="button" class="btn btn-sm btn-danger me-2 remove-answer">×</button>
-                    <input name="Questions[${index}].Answers[${j}].Text" class="form-control" placeholder="Answer ${j+1}" />
-                </div>
-            `).join('')}
+            ${[0,1].map(j => createAnswerItem(j)).join('')}
         </div>
 
-                <div class="mt-2">
-                    <button type="button" class="btn btn-sm btn-primary prev-question">Previous</button>
-                    <button type="button" class="btn btn-sm btn-primary next-question">Next</button>
-                    <button type="button" class="btn btn-sm btn-secondary add-answer">Add Answer</button>
-                    <button type="button" class="btn btn-sm btn-danger delete-question">Delete Question</button>
-                </div>
-            `;
+        <div class="mt-2">
+            <button type="button" class="btn btn-sm btn-primary prev-question">Previous</button>
+            <button type="button" class="btn btn-sm btn-primary next-question">Next</button>
+            <button type="button" class="btn btn-sm btn-secondary add-answer">Add Answer</button>
+            <button type="button" class="btn btn-sm btn-danger delete-question">Delete Question</button>
+        </div>
+    `;
 
-            return card;
-        }
+    return card;
+}
 
-        const container = document.getElementById('questionsContainer');
-        const addBtn = document.getElementById('addQuestionBtn');
+const container = document.getElementById('questionsContainer');
+const addBtn = document.getElementById('addQuestionBtn');
 
-        // Add initial question if desired (optional)
-        // container.appendChild(createQuestionCard(questionIndex));
-        // showQuestion(0);
+// Add a new question
+addBtn.addEventListener('click', () => {
+    container.appendChild(createQuestionCard(questionIndex));
+    showQuestion(questionIndex);
+    questionIndex++;
+});
 
-        addBtn.addEventListener('click', () => {
-            container.appendChild(createQuestionCard(questionIndex));
-            showQuestion(questionIndex);
-            questionIndex++;
+// Show only one question at a time
+function showQuestion(index) {
+    const cards = document.querySelectorAll('.question-card');
+    cards.forEach((c,i) => c.style.display = i === index ? 'block' : 'none');
+
+    // Disable prev/next buttons on first/last question
+    cards.forEach((c,i) => {
+        const nextBtn = c.querySelector('.next-question');
+        const prevBtn = c.querySelector('.prev-question');
+        if(nextBtn) nextBtn.disabled = i === cards.length - 1;
+        if(prevBtn) prevBtn.disabled = i === 0;
+    });
+}
+
+// Handle clicks inside question container
+container.addEventListener('click', e => {
+    const card = e.target.closest('.question-card');
+    if(!card) return;
+    let index = parseInt(card.dataset.index);
+
+    // Navigation
+    if(e.target.classList.contains('next-question')) showQuestion(index + 1);
+    if(e.target.classList.contains('prev-question')) showQuestion(index - 1);
+
+    // Add answer
+    if (e.target.classList.contains('add-answer')) {
+        const answersBlock = card.querySelector('.answers-block');
+        const answerCount = answersBlock.querySelectorAll('.answer-item').length;
+        const div = document.createElement('div');
+        div.classList.add('answer-item', 'mb-1', 'd-flex', 'align-items-center');
+        div.innerHTML = `
+            <button type="button" class="btn btn-sm btn-danger me-2 remove-answer">×</button>
+            <input type="radio" name="Questions[${index}].CorrectAnswer" value="${answerCount}" class="form-check-input me-2" />
+            <input name="Questions[${index}].Answers[${answerCount}].Text" class="form-control" placeholder="Answer ${answerCount + 1}" />
+        `;
+        answersBlock.appendChild(div);
+    }
+
+    // Remove answer
+    if(e.target.classList.contains('remove-answer')) {
+        e.target.closest('.answer-item').remove();
+        // Reindex answers
+        const answers = card.querySelectorAll('.answer-item');
+        answers.forEach((a,j) => {
+            const textInput = a.querySelector('input[type="text"]');
+            const radioInput = a.querySelector('input[type="radio"]');
+            textInput.name = `Questions[${index}].Answers[${j}].Text`;
+            radioInput.value = j;
         });
+    }
 
-        // Show one question at a time
-        function showQuestion(index) {
-            const cards = document.querySelectorAll('.question-card');
-            cards.forEach((c,i) => c.style.display = i === index ? 'block' : 'none');
-
-            // Hide next button on last question
-            cards.forEach((c,i) => {
-                const nextBtn = c.querySelector('.next-question');
-                if(nextBtn) nextBtn.disabled = i === cards.length - 1;
+    // Delete question
+    if(e.target.classList.contains('delete-question')) {
+        card.remove();
+        const cards = document.querySelectorAll('.question-card');
+        cards.forEach((c,i) => {
+            c.dataset.index = i;
+            c.querySelector('h5').textContent = `Question ${i+1}`;
+            c.querySelector('input[name^="Questions"]').name = `Questions[${i}].Text`;
+            c.querySelectorAll('.answer-item input[type="text"]').forEach((a,j) => {
+                a.name = `Questions[${i}].Answers[${j}].Text`;
             });
-
-            // Disable previous button on first question
-            cards.forEach((c,i) => {
-                const prevBtn = c.querySelector('.prev-question');
-                if(prevBtn) prevBtn.disabled = i === 0;
+            c.querySelectorAll('.answer-item input[type="radio"]').forEach((r,j) => {
+                r.name = `Questions[${i}].CorrectAnswer`;
+                r.value = j;
             });
-        }
-
-        container.addEventListener('click', e => {
-            const card = e.target.closest('.question-card');
-            if(!card) return;
-            let index = parseInt(card.dataset.index);
-
-            // Next / Previous navigation
-            if(e.target.classList.contains('next-question')) showQuestion(index + 1);
-            if(e.target.classList.contains('prev-question')) showQuestion(index - 1);
-
-            // Add answer
-            if (e.target.classList.contains('add-answer')) {
-                const answersBlock = card.querySelector('.answers-block');
-                const answerCount = answersBlock.querySelectorAll('.answer-item').length;
-                const div = document.createElement('div');
-                div.classList.add('answer-item', 'mb-1', 'd-flex', 'align-items-center'); // flex layout
-                div.innerHTML = `
-                    <button type="button" class="btn btn-sm btn-danger me-2 remove-answer">×</button>
-                    <input name="Questions[${index}].Answers[${answerCount}].Text" class="form-control" placeholder="Answer ${answerCount + 1}" />
-                `;
-                answersBlock.appendChild(div);
-            }
-
-            // Remove answer
-            if(e.target.classList.contains('remove-answer')) {
-                e.target.closest('.answer-item').remove();
-                // Reindex answers
-                const answers = card.querySelectorAll('.answer-item');
-                answers.forEach((a,j) => {
-                    const input = a.querySelector('input');
-                    input.name = `Questions[${index}].Answers[${j}].Text`;
-                });
-            }
-
-            // Delete question
-            if(e.target.classList.contains('delete-question')) {
-                card.remove();
-                // Reindex remaining questions
-                const cards = document.querySelectorAll('.question-card');
-                cards.forEach((c,i) => {
-                    c.dataset.index = i;
-                    c.querySelector('h5').textContent = `Question ${i+1}`;
-                    c.querySelector('input[name^="Questions"]').name = `Questions[${i}].Text`;
-                    c.querySelectorAll('.answer-item input').forEach((a,j) => {
-                        a.name = `Questions[${i}].Answers[${j}].Text`;
-                    });
-                });
-                questionIndex = cards.length;
-                showQuestion(Math.min(index, cards.length-1));
-            }
         });
+        questionIndex = cards.length;
+        showQuestion(Math.min(index, cards.length-1));
+    }
+});
 
-        // Initially show first question if any
-        showQuestion(0);
-
-    </script>
+// Show first question initially (if any)
+showQuestion(0);
+</script>
 }
