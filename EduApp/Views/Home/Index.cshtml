@@ -1,0 +1,17 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+
+<h1>Vítejte v EduApp!</h1>
+
+<p>Tato aplikace zatím umí:</p>
+
+<div class="list-group">
+    <a class="list-group-item list-group-item-action" asp-controller="Quiz" asp-action="Create">
+        📝 Vytvořit nový kvíz
+    </a>
+    <a class="list-group-item list-group-item-action" asp-controller="Quiz" asp-action="Index">
+        📋 Přidat otázky a odpovědi k existujícím kvízům a spustit kvíz
+    </a>
+</div>

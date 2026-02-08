@@ -1,0 +1,43 @@
+﻿@using EduApp.ViewModels
+@model QuizResultViewModel
+
+@{
+    ViewData["Title"] = "Quiz Result";
+}
+
+<div class="d-flex justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="card shadow-sm text-center" style="max-width: 450px; width: 100%;">
+        <div class="card-body">
+            <h2 class="card-title mb-3">
+                Quiz Completed 🎉
+            </h2>
+
+            <h1 class="display-4 fw-bold text-primary">
+                @Model.Score / @Model.Total
+            </h1>
+
+            <p class="text-muted mb-2">
+                (@Model.Percentage%)
+            </p>
+
+            <p class="fs-5 mt-3">
+                @Model.Message
+            </p>
+
+            <div class="d-grid gap-2 mt-4">
+                <a class="btn btn-primary"
+                   asp-controller="Quiz"
+                   asp-action="Question"
+                   asp-route-index="0">
+                    🔁 Try Again
+                </a>
+
+                <a class="btn btn-outline-secondary"
+                   asp-controller="Home"
+                   asp-action="Index">
+                    🏠 Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
