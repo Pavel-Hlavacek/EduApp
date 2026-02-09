@@ -1,0 +1,2 @@
+1. Editing create new quiz
+2. Property is correct is not correctly set when editing quiz
