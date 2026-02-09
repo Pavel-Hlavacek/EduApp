@@ -1,0 +1,43 @@
+THIRD-PARTY SOFTWARE NOTICES
+
+This project uses the following third-party libraries:
+
+--------------------------------------------------
+AutoMapper 16.0.0
+Copyright (c) Lucky Penny Software
+
+Licensed under the Reciprocal Public License 1.5 (RPL-1.5)
+https://opensource.org/license/rpl-1-5/
+
+Alternative commercial license available:
+https://luckypennysoftware.com/license
+
+--------------------------------------------------
+Microsoft.AspNetCore.Identity.EntityFrameworkCore
+Licensed under the MIT License
+https://licenses.nuget.org/MIT
+
+--------------------------------------------------
+Microsoft.AspNetCore.Identity.UI
+Licensed under the MIT License
+https://licenses.nuget.org/MIT
+
+--------------------------------------------------
+Microsoft.EntityFrameworkCore.Sqlite
+Licensed under the MIT License
+https://licenses.nuget.org/MIT
+
+--------------------------------------------------
+Microsoft.EntityFrameworkCore.SqlServer
+Licensed under the MIT License
+https://licenses.nuget.org/MIT
+
+--------------------------------------------------
+Microsoft.EntityFrameworkCore.Tools
+Licensed under the MIT License
+https://licenses.nuget.org/MIT
+
+--------------------------------------------------
+Microsoft.VisualStudio.Web.CodeGeneration.Design
+Licensed under the MIT License
+https://licenses.nuget.org/MIT
