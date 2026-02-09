@@ -1,5 +1,5 @@
 ﻿@using EduApp.ViewModels
-@model QuizResultViewModel
+@model QuizResultDto
 
 @{
     ViewData["Title"] = "Quiz Result";
@@ -27,8 +27,8 @@
             <div class="d-grid gap-2 mt-4">
                 <a class="btn btn-primary"
                    asp-controller="Quiz"
-                   asp-action="Question"
-                   asp-route-index="0">
+                   asp-action="Start"
+                   asp-route-quizId="@Model.QuizId">
                     🔁 Try Again
                 </a>
 

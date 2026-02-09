@@ -70,7 +70,7 @@ namespace EduApp.Data
 
         public IEnumerable<QuestionAttempt> GetQuestionAttempts(int attemptId)
         {
-            return _context.QuestionAttempts.Where(a => a.Id == attemptId); 
+            return _context.QuestionAttempts.Where(a => a.QuizAttemptId == attemptId); 
         }
 
         public Quiz GetQuizById(int id)

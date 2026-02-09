@@ -134,13 +134,14 @@ namespace EduApp.Controllers
                 }
             }
 
-            var resultVm = new QuizResultViewModel
+            var resultDto = new QuizResultDto
             {
                 Score = score,
                 Total = attempt.Quiz.Questions.Count,
+                QuizId = attempt.QuizId,
             };
 
-            return View(resultVm);
+            return View(resultDto);
         }
 
         public IActionResult Create()

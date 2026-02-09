@@ -1,4 +1,5 @@
 1. Add validation on client and server
-2. Replace synch method with async
+2. Replace sync method with async (IQuizRepository)
 3. Complex refactor code - clean controller, add check in IQuizRepository and so on
 4. Fix GUI
+5. Fix flow in app

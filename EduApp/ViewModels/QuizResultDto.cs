@@ -1,6 +1,8 @@
-﻿namespace EduApp.ViewModels
+﻿using EduApp.Models;
+
+namespace EduApp.ViewModels
 {
-    public class QuizResultViewModel
+    public class QuizResultDto
     {
         public int Score { get; set; }
         public int Total { get; set; }
@@ -16,5 +18,7 @@
                 >= 50 => "Not bad 🙂",
                 _ => "Keep practicing 💪"
             };
+
+        public int QuizId { get; internal set; }
     }
 }
