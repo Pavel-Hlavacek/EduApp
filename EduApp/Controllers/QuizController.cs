@@ -23,21 +23,21 @@ namespace EduApp.Controllers
             _mapper = mapper;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var quizzes = _quizRepository.GetAllQuizzes();
-            return View(quizzes.ToList());
+            var quizzes = _quizRepository.GetAllQuizzesAsync();
+            return View(await quizzes);
         }
 
-        public IActionResult SelectedQuiz(int id)
+        public async Task<IActionResult> SelectedQuiz(int id)
         {
-            var quiz = _quizRepository.GetQuizById(id);
+            var quiz = await _quizRepository.GetQuizByIdAsync(id);
             if (quiz == null) return NotFound();
 
             return View(quiz);
         }
 
-        public IActionResult Start(int quizId)
+        public async Task<IActionResult> Start(int quizId)
         {
             if (User?.Identity?.IsAuthenticated != true)
             {
@@ -53,15 +53,16 @@ namespace EduApp.Controllers
                 StartedAt = DateTime.UtcNow
             };
 
-            _quizRepository.AddQuizAttempt(attempt);
+            await _quizRepository.AddQuizAttemptAsync(attempt);
 
             return RedirectToAction("Question", new { attemptId = attempt.Id, index = 0 });
         }
 
-        public IActionResult Question(int attemptId, int index)
+        public async Task<IActionResult> Question(int attemptId, int index)
         {
-            var attempt = _quizRepository.GetAttempt(attemptId);
-             
+            var attempt = await _quizRepository.GetAttemptAsync(attemptId);
+            if (attempt is null) return NotFound(); 
+
             var question = attempt.Quiz.Questions.ElementAt(index);
 
             var questionDto = new QuestionDto
@@ -77,26 +78,29 @@ namespace EduApp.Controllers
         }
 
         [HttpPost]
-        public IActionResult Question(QuestionDto model)
+        public async Task<IActionResult> Question(QuestionDto model)
         {
-            var attempt = _quizRepository.GetAttempt(model.AttemptId);
+            var attempt = await _quizRepository.GetAttemptAsync(model.AttemptId);
+            if (attempt == null) return NotFound();
 
-            var question = attempt.Quiz.Questions.ElementAt(model.QuestionIndex);
+            var question = attempt?.Quiz?.Questions?.ElementAt(model.QuestionIndex);
+            if (question is null) return NotFound();
+            
             var selectedAnswer = question.Answers.ElementAt(model.SelectedAnswerIndex);
 
             var qa = new QuestionAttempt
             {
-                QuizAttemptId = attempt.Id,
+                QuizAttemptId = attempt!.Id,
                 QuestionId = question.Id,
                 SelectedAnswerId = selectedAnswer.Id
             };
 
-            _quizRepository.AddQuestionAttempt(qa);
+            await _quizRepository.AddQuestionAttemptAsync(qa);
 
             if (model.QuestionIndex + 1 >= attempt.Quiz.Questions.Count)
             {
                 attempt.FinishedAt = DateTime.UtcNow;
-                _quizRepository.UpdateQuizAttempt(attempt);
+                await _quizRepository.UpdateQuizAttemptAsync(attempt);
 
                 return RedirectToAction("Result", new { attemptId = model.AttemptId });
             }
@@ -109,16 +113,16 @@ namespace EduApp.Controllers
             });
         }
 
-        public IActionResult Result(int attemptId)
+        public async Task<IActionResult> Result(int attemptId)
         {
             // Load the attempt including questions and answers
-            var attempt = _quizRepository.GetAttempt(attemptId);
+            var attempt = await _quizRepository.GetAttemptAsync(attemptId);
 
             if (attempt == null)
                 return NotFound();
 
             // Load all answers the user selected
-            var userAnswers = _quizRepository.GetQuestionAttempts(attemptId);
+            var userAnswers = await _quizRepository.GetQuestionAttemptsAsync(attemptId);
 
             // Calculate score
             int score = 0;
@@ -152,7 +156,7 @@ namespace EduApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(QuizDto quizDto)
+        public async Task<IActionResult> Create(QuizDto quizDto)
         {
             if (!ModelState.IsValid)
                 return View(quizDto);
@@ -165,13 +169,13 @@ namespace EduApp.Controllers
                 question.Quiz = quiz;
             }
 
-            _quizRepository.AddQuiz(quiz);
+            await _quizRepository.AddQuizAsync(quiz);
             return RedirectToAction(nameof(Index));
         }
 
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            var quiz = _quizRepository.GetQuizWithQuestionsAndAnswers(id);
+            var quiz = await _quizRepository.GetQuizWithQuestionsAndAnswersAsync(id);
             if (quiz == null) return NotFound();
 
             var quizDto = _mapper.Map<QuizDto>(quiz);
@@ -181,21 +185,21 @@ namespace EduApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(QuizDto quizDto)
+        public async Task<IActionResult> Edit(QuizDto quizDto)
         {
             var quiz = _mapper.Map<Quiz>(quizDto);
 
             if (ModelState.IsValid)
             {
-                _quizRepository.UpdateQuiz(quiz);
+                await _quizRepository.UpdateQuizAsync(quiz);
                 return RedirectToAction(nameof(Index));
             }
             return View(quizDto);
         }
 
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var quiz = _quizRepository.GetQuizById(id);
+            var quiz = await _quizRepository.GetQuizByIdAsync(id);
             if (quiz == null) return NotFound();
 
             return View(quiz);
@@ -203,9 +207,9 @@ namespace EduApp.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            _quizRepository.DeleteQuiz(id);
+            await _quizRepository.DeleteQuizAsync(id);
             return RedirectToAction(nameof(Index));
         }
     }

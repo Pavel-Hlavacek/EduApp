@@ -12,73 +12,76 @@ namespace EduApp.Data
             _context = context;
         }
 
-        public void AddQuestionAttempt(QuestionAttempt qa)
+        public async Task AddQuestionAttemptAsync(QuestionAttempt qa)
         {
             _context.QuestionAttempts.Add(qa);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public void AddQuiz(Quiz quiz)
+        public async Task AddQuizAsync(Quiz quiz)
         {
             if (quiz is null) return;
             _context.Quizzes.Add(quiz);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public void AddQuizAttempt(QuizAttempt quizAttempt)
+        public async Task AddQuizAttemptAsync(QuizAttempt quizAttempt)
         {
             _context.QuizAttempts.Add(quizAttempt);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public void DeleteQuiz(int id)
+        public async Task DeleteQuizAsync(int id)
         {
-            var quiz = _context.Quizzes.Find(id);
+            var quiz = await _context.Quizzes.FindAsync(id);
+            if (quiz is null) return;
+
             _context.Quizzes.Remove(quiz);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public IEnumerable<Quiz> GetAllQuizzes()
+        public async Task<IEnumerable<Quiz>> GetAllQuizzesAsync()
         {
-            return _context.Quizzes;
+            return await _context.Quizzes.AsNoTracking().ToListAsync();
         }
 
-        public QuizAttempt GetAttempt(int attemptId)
+        public async Task<QuizAttempt?> GetAttemptAsync(int attemptId)
         {
-            return _context.QuizAttempts
+            return await _context.QuizAttempts
                            .Include(a => a.Quiz)
                            .ThenInclude(q => q.Questions)
                            .ThenInclude(q => q.Answers)
-                           .First(a => a.Id == attemptId);
+                           .FirstOrDefaultAsync(a => a.Id == attemptId);
         }
 
-        public IEnumerable<QuestionAttempt> GetQuestionAttempts(int attemptId)
+        public async Task<IEnumerable<QuestionAttempt>> GetQuestionAttemptsAsync(int attemptId)
         {
-            return _context.QuestionAttempts.Where(a => a.QuizAttemptId == attemptId); 
+            return await _context.QuestionAttempts.Where(a => a.QuizAttemptId == attemptId).ToListAsync(); 
         }
 
-        public Quiz GetQuizById(int id)
+        public async Task<Quiz?> GetQuizByIdAsync(int id)
         {
-            return _context.Quizzes.Find(id);
+            return await _context.Quizzes.FindAsync(id);
         }
 
-        public Quiz GetQuizWithQuestionsAndAnswers(int quizId)
+        public async Task<Quiz?> GetQuizWithQuestionsAndAnswersAsync(int quizId)
         {
-            return _context.Quizzes
+            return await _context.Quizzes
                         .Include(q => q.Questions)
                         .ThenInclude(qn => qn.Answers)
-                        .FirstOrDefault(q => q.Id == quizId);
+                        .FirstOrDefaultAsync(q => q.Id == quizId);
         }
 
-        public void UpdateQuiz(Quiz quiz)
+        public async Task UpdateQuizAsync(Quiz quiz)
         {
             _context.Quizzes.Update(quiz);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public void UpdateQuizAttempt(QuizAttempt attempt)
+        public async Task UpdateQuizAttemptAsync(QuizAttempt attempt)
         {
             _context.QuizAttempts.Update(attempt);
+            await _context.SaveChangesAsync();
         }
     }
 
