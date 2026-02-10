@@ -1,14 +1,13 @@
-﻿using Microsoft.CodeAnalysis.Options;
-using QuizApp.Domain;
-
-namespace EduApp.Models
+﻿namespace QuizApp.Domain
 {
-    public class UserAnswer
+    public class QuestionAttempt
     {
         public int Id { get; set; }
         public int QuizAttemptId { get; set; }
+        public QuizAttempt QuizAttempt { get; set; }
         public int QuestionId { get; set; }
         public int SelectedAnswerId { get; set; }
-        public bool IsCorrect { get; set; }
     }
+
+
 }

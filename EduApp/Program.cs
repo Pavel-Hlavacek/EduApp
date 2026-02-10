@@ -4,6 +4,7 @@ using EduApp.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using QuizApp;
+using QuizApp.Repositories;
 
 namespace EduApp
 {

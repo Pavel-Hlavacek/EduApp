@@ -1,25 +1,9 @@
-﻿using EduApp.Models;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using QuizApp.Domain;
+using QuizApp.Repositories;
 
 namespace EduApp.Data
 {
-    public interface IQuizRepository
-    {
-        IEnumerable<Quiz> GetAllQuizzes();
-        Quiz GetQuizById(int id);
-        void AddQuiz(Quiz quiz);
-        void UpdateQuiz(Quiz quiz);
-        void DeleteQuiz(int id);
-        Quiz GetQuizWithQuestionsAndAnswers(int quizId);
-
-        void AddQuizAttempt(QuizAttempt quizAttempt);
-        QuizAttempt GetAttempt(int attemptId);
-        void AddQuestionAttempt(QuestionAttempt qa);
-        void UpdateQuizAttempt(QuizAttempt attempt);
-        IEnumerable<QuestionAttempt> GetQuestionAttempts(int attemptId);
-    }
-
     public class QuizRepository : IQuizRepository
     {
         private readonly ApplicationDbContext _context;

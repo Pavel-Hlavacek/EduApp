@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
-using EduApp.Data;
 using EduApp.Models;
 using EduApp.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using QuizApp.Domain;
+using QuizApp.Repositories;
 using System.Security.Claims;
 
 namespace EduApp.Controllers

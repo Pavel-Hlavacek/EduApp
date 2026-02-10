@@ -1,9 +1,4 @@
-﻿using EduApp.Data;
-using Microsoft.AspNetCore.Identity;
-using QuizApp.Domain;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace EduApp.Models
+﻿namespace QuizApp.Domain
 {
     public class QuizAttempt
     {
@@ -16,15 +11,6 @@ namespace EduApp.Models
         public int Score { get; set; }
         //public List<UserAnswer> Answers { get; set; } = new();
         public ICollection<QuestionAttempt> QuestionAttempts { get; set; }
-    }
-
-    public class QuestionAttempt
-    {
-        public int Id { get; set; }
-        public int QuizAttemptId { get; set; }
-        public QuizAttempt QuizAttempt { get; set; }
-        public int QuestionId { get; set; }
-        public int SelectedAnswerId { get; set; }
     }
 
 
