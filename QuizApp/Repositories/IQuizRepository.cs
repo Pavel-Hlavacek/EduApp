@@ -11,11 +11,11 @@ namespace QuizApp.Repositories
         Task DeleteQuizAsync(int id);
         Task<Quiz?> GetQuizWithQuestionsAndAnswersAsync(int quizId);
 
-        Task AddQuizAttemptAsync(QuizAttempt quizAttempt);
-        Task<QuizAttempt?> GetAttemptAsync(int attemptId);
-        Task AddQuestionAttemptAsync(QuestionAttempt qa);
-        Task UpdateQuizAttemptAsync(QuizAttempt attempt);
-        Task<IEnumerable<QuestionAttempt>> GetQuestionAttemptsAsync(int attemptId);
+        //Task AddQuizAttemptAsync(QuizAttempt quizAttempt);
+        //Task<QuizAttempt?> GetAttemptAsync(int attemptId);
+        //Task AddQuestionAttemptAsync(QuestionAttempt qa);
+        //Task UpdateQuizAttemptAsync(QuizAttempt attempt);
+        //Task<IEnumerable<QuestionAttempt>> GetQuestionAttemptsAsync(int attemptId);
     }
 
 }

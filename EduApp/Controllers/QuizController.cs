@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using QuizApp.Domain;
 using QuizApp.Repositories;
-using System.Security.Claims;
 
 namespace EduApp.Controllers
 {
@@ -13,14 +12,20 @@ namespace EduApp.Controllers
     public class QuizController : Controller
     {
         private readonly IQuizRepository _quizRepository;
+        private readonly IQuizAttemptRepository _quizAttemptRepository;
         private readonly IMapper _mapper;
+        private readonly ILogger<QuizController> _logger;
 
         public QuizController(
             IQuizRepository quizRepository,
-            IMapper mapper)
+            IMapper mapper,
+            ILogger<QuizController> logger,
+            IQuizAttemptRepository quizAttemptRepository)
         {
             _quizRepository = quizRepository;
             _mapper = mapper;
+            _logger = logger;
+            _quizAttemptRepository = quizAttemptRepository;
         }
 
         public async Task<IActionResult> Index()
@@ -37,6 +42,8 @@ namespace EduApp.Controllers
             return View(quiz);
         }
 
+
+        // quiz attempt controller
         public async Task<IActionResult> Start(int quizId)
         {
             if (User?.Identity?.IsAuthenticated != true)
@@ -53,14 +60,15 @@ namespace EduApp.Controllers
                 StartedAt = DateTime.UtcNow
             };
 
-            await _quizRepository.AddQuizAttemptAsync(attempt);
+            await _quizAttemptRepository.AddQuizAttemptAsync(attempt);
 
             return RedirectToAction("Question", new { attemptId = attempt.Id, index = 0 });
         }
 
+        // quiz attempt controller
         public async Task<IActionResult> Question(int attemptId, int index)
         {
-            var attempt = await _quizRepository.GetAttemptAsync(attemptId);
+            var attempt = await _quizAttemptRepository.GetAttemptAsync(attemptId);
             if (attempt is null) return NotFound(); 
 
             var question = attempt.Quiz.Questions.ElementAt(index);
@@ -77,10 +85,12 @@ namespace EduApp.Controllers
             return View(questionDto);
         }
 
+
+        //attempt controller
         [HttpPost]
         public async Task<IActionResult> Question(QuestionDto model)
         {
-            var attempt = await _quizRepository.GetAttemptAsync(model.AttemptId);
+            var attempt = await _quizAttemptRepository.GetAttemptAsync(model.AttemptId);
             if (attempt == null) return NotFound();
 
             var question = attempt?.Quiz?.Questions?.ElementAt(model.QuestionIndex);
@@ -95,12 +105,12 @@ namespace EduApp.Controllers
                 SelectedAnswerId = selectedAnswer.Id
             };
 
-            await _quizRepository.AddQuestionAttemptAsync(qa);
+            await _quizAttemptRepository.AddQuestionAttemptAsync(qa);
 
             if (model.QuestionIndex + 1 >= attempt.Quiz.Questions.Count)
             {
                 attempt.FinishedAt = DateTime.UtcNow;
-                await _quizRepository.UpdateQuizAttemptAsync(attempt);
+                await _quizAttemptRepository.UpdateQuizAttemptAsync(attempt);
 
                 return RedirectToAction("Result", new { attemptId = model.AttemptId });
             }
@@ -113,33 +123,30 @@ namespace EduApp.Controllers
             });
         }
 
+        // quiz attempt controller
         public async Task<IActionResult> Result(int attemptId)
         {
-            // Load the attempt including questions and answers
-            var attempt = await _quizRepository.GetAttemptAsync(attemptId);
+            //* move to service
+            var attempt = await _quizAttemptRepository.GetAttemptAsync(attemptId);
 
             if (attempt == null)
                 return NotFound();
 
-            // Load all answers the user selected
-            var userAnswers = await _quizRepository.GetQuestionAttemptsAsync(attemptId);
-
-            int score = 0;
-
-            foreach (var question in attempt.Quiz.Questions)
+            var userQuestionsAttempt = await _quizAttemptRepository.GetQuestionAttemptsAsync(attemptId);
+            
+            foreach (var userQuestionAttempt in userQuestionsAttempt)
             {
-                var userAnswer = userAnswers.FirstOrDefault(qa => qa.QuestionId == question.Id);
-                if (userAnswer != null)
-                {
-                    var selected = question.Answers.First(a => a.Id == userAnswer.SelectedAnswerId);
-                    if (selected.IsCorrect)
-                        score++;
-                }
+                attempt.QuestionAttempts.Add(userQuestionAttempt);
             }
+
+            attempt.Score = attempt.CalculateScore();
+            attempt.FinishedAt = DateTime.UtcNow;
+            await _quizAttemptRepository.UpdateQuizAttemptAsync(attempt);
+            //* 
 
             var resultDto = new QuizResultDto
             {
-                Score = score,
+                Score = attempt.Score,
                 Total = attempt.Quiz.Questions.Count,
                 QuizId = attempt.QuizId,
             };

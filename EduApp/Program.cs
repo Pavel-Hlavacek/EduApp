@@ -1,9 +1,6 @@
 using EduApp.Data;
 using EduApp.Mapper;
-using EduApp.Services;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using QuizApp;
 using QuizApp.Repositories;
 
 namespace EduApp
@@ -16,6 +13,7 @@ namespace EduApp
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddSession();
             builder.Services.AddScoped<IQuizRepository, QuizRepository>();
+            builder.Services.AddScoped<IQuizAttemptRepository, QuizAttemptRepository>();
             builder.Services.AddAutoMapper(cfg =>
             {
                 cfg.AddProfile<MappingProfile>();
@@ -38,8 +36,8 @@ namespace EduApp
 
             builder.Services.ConfigureApplicationCookie(options =>
             {
-                options.LoginPath = "/Identity/Account/Login"; // correct login URL
-                options.AccessDeniedPath = "/Identity/Account/AccessDenied"; // optional
+                options.LoginPath = "/Identity/Account/Login";
+                options.AccessDeniedPath = "/Identity/Account/AccessDenied";
             });
 
             builder.Services.AddRazorPages();
@@ -53,7 +51,6 @@ namespace EduApp
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
-
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
