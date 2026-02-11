@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using EduApp.Models;
+using EduApp.Extensions;
 using EduApp.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -44,7 +44,7 @@ namespace EduApp.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User.GetUserId();
 
             var attempt = new QuizAttempt
             {
@@ -124,7 +124,6 @@ namespace EduApp.Controllers
             // Load all answers the user selected
             var userAnswers = await _quizRepository.GetQuestionAttemptsAsync(attemptId);
 
-            // Calculate score
             int score = 0;
 
             foreach (var question in attempt.Quiz.Questions)
