@@ -11,7 +11,11 @@
         <p class="card-text fw-semibold">
             @Model.Text
         </p>
-        <form asp-action="Question" asp-route-quizId="@Model.QuizId" method="post">
+        <form 
+            asp-controller="QuizAttempt"
+            asp-action="Question"
+            asp-route-quizId="@Model.QuizId"
+            method="post">
             @Html.AntiForgeryToken()
 
             <input type="hidden" asp-for="AttemptId" />
