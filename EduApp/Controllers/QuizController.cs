@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using EduApp.Models;
 using EduApp.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

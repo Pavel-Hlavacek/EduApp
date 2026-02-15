@@ -4,7 +4,6 @@
 <h2>Create Quiz</h2>
 
 <form asp-action="Create" method="post" id="quizForm">
-    @Html.AntiForgeryToken()
     @await Html.PartialAsync("_CreateEditForm", Model)
 </form>
 
