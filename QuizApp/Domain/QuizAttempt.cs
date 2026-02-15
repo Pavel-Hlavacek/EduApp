@@ -9,8 +9,23 @@
         public DateTime StartedAt { get; set; }
         public DateTime? FinishedAt { get; set; }
         public int Score { get; set; }
-        //public List<UserAnswer> Answers { get; set; } = new();
         public ICollection<QuestionAttempt> QuestionAttempts { get; set; }
+
+        public int CalculateScore()
+        {
+            int score = 0;
+            foreach (var question in Quiz.Questions)
+            {
+                var userAnswer = QuestionAttempts.FirstOrDefault(qa => qa.QuestionId == question.Id);
+                if (userAnswer != null)
+                {
+                    var selected = question.Answers.First(a => a.Id == userAnswer.SelectedAnswerId);
+                    if (selected.IsCorrect)
+                        score++;
+                }
+            }
+            return score;
+        }
     }
 
 

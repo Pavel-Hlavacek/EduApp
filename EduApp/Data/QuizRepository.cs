@@ -12,11 +12,11 @@ namespace EduApp.Data
             _context = context;
         }
 
-        public async Task AddQuestionAttemptAsync(QuestionAttempt qa)
-        {
-            _context.QuestionAttempts.Add(qa);
-            await _context.SaveChangesAsync();
-        }
+        //public async Task AddQuestionAttemptAsync(QuestionAttempt qa)
+        //{
+        //    _context.QuestionAttempts.Add(qa);
+        //    await _context.SaveChangesAsync();
+        //}
 
         public async Task AddQuizAsync(Quiz quiz)
         {
@@ -25,11 +25,11 @@ namespace EduApp.Data
             await _context.SaveChangesAsync();
         }
 
-        public async Task AddQuizAttemptAsync(QuizAttempt quizAttempt)
-        {
-            _context.QuizAttempts.Add(quizAttempt);
-            await _context.SaveChangesAsync();
-        }
+        //public async Task AddQuizAttemptAsync(QuizAttempt quizAttempt)
+        //{
+        //    _context.QuizAttempts.Add(quizAttempt);
+        //    await _context.SaveChangesAsync();
+        //}
 
         public async Task DeleteQuizAsync(int id)
         {
@@ -78,11 +78,11 @@ namespace EduApp.Data
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateQuizAttemptAsync(QuizAttempt attempt)
-        {
-            _context.QuizAttempts.Update(attempt);
-            await _context.SaveChangesAsync();
-        }
+        //public async Task UpdateQuizAttemptAsync(QuizAttempt attempt)
+        //{
+        //    _context.QuizAttempts.Update(attempt);
+        //    await _context.SaveChangesAsync();
+        //}
     }
 
 }
